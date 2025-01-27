@@ -25,7 +25,7 @@ def get_requirements(filepath:str) -> List[str]:
 setup(
     name='CustomerRetention',
     version='0.0.1',
-    author='Goutam',
+    author='GoutamNaik',
     author_email='gmnaik96@gmail.com',
     packages=find_packages(),
     install_requires=get_requirements('requirements.txt')
