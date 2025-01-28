@@ -19,23 +19,6 @@ from src.utils import save_object
 @dataclass
 class DataTransformationConfig:
     preprocessor_obj_file_path = os.path.join('artifacts',"preprocessor.pkl")
-
-# Custom transformer to apply LabelEncoder on multiple columns
-class MultiColumnLabelEncoder(BaseEstimator, TransformerMixin):
-    def __init__(self):
-        self.encoders = []
-    
-    def fit(self, X, y=None):
-        self.encoders = [LabelEncoder() for _ in range(X.shape[1])]
-        for i in range(X.shape[1]):
-            self.encoders[i].fit(X[:, i])
-        return self
-    
-    def transform(self, X):
-        X_transformed = X.copy()
-        for i in range(X.shape[1]):
-            X_transformed[:, i] = self.encoders[i].transform(X[:, i])
-        return X_transformed
     
 class DataTransformation:
     def __init__(self):
@@ -75,22 +58,18 @@ class DataTransformation:
         '''
         This function is responsible for data transformation
         '''
-        try:
-            #numerical_columns = ["writing_score","reading_score"]
-            #categorical_columns = ["gender","race_ethnicity","parental_level_of_education","lunch","test_preparation_course",]
-            
+        try:       
             num_pipeline = Pipeline(
                 steps=[
                     ("imputer",SimpleImputer(strategy="median")),
-                    ("scaler",StandardScaler(with_mean=False))
+                    ("scaler",StandardScaler())
                 ]
                 )
             
             cat_pipeline = Pipeline(
                 steps=[
                     ("imputer",SimpleImputer(strategy="most_frequent")),
-                    ("label_encoder", MultiColumnLabelEncoder())
-                    #("scaler",StandardScaler(with_mean=False))
+                    ("label_encoder", OneHotEncoder())
                 ]
                 )
             
@@ -108,6 +87,8 @@ class DataTransformation:
         except Exception as e:
             raise CustomException(e,sys)
         
+        
+        
     def initiate_data_transformation(self,train_path,test_path):
         try:
             train_df = pd.read_csv(train_path)
@@ -119,9 +100,6 @@ class DataTransformation:
             
             train_df,test_df,numerical_columns,categorical_columns = self.conversion_datatype_columns(train_df,test_df)
             
-            print("numerical_columns:",numerical_columns)
-            print("categorical_columns:",categorical_columns)
-            
             logging.info("Split dependent and independent variables")
             X_train = train_df.drop('Churn',axis = 1)
             y_train = train_df['Churn']
@@ -129,20 +107,15 @@ class DataTransformation:
             X_test = test_df.drop('Churn',axis = 1)
             y_test = test_df['Churn']
             
-            print("Original class distribution:", Counter(y_train))
- 
             logging.info("Oversampling using RandomOverSampler")
             oversample = RandomOverSampler(sampling_strategy='minority')
             X_over, y_over = oversample.fit_resample(X_train, y_train)
 
-            print("Oversampled class distribution:", Counter(y_over))
-            
-            print("X_over:\n",X_over)
-            
             logging.info("Obtaining preprocessing object")
+            
             #Drop 'Churn' from categorical_columns list as it is dependent column
             categorical_columns.remove("Churn")
-            print("Categorical column after removing churn:",categorical_columns)
+            
             preprocessing_obj = self.get_data_transformer_object(numerical_columns,categorical_columns)
             
             logging.info("Applying preprocessing object on training dataframe and testing dataframe")
@@ -150,29 +123,16 @@ class DataTransformation:
             X_train = preprocessing_obj.fit_transform(X_over)
             X_test = preprocessing_obj.transform(X_test)
             
-            print("X_train:\n",X_train.shape,type(X_train))
-            print("*********************************************************************************************")
-            print("X_test:\n",X_test.shape,type(X_test))
-            
-            #Apply encoding for dependent variable using mapping:
             mapping_y = {'No': 0, 'Yes': 1}
             y_train = y_over.map(mapping_y)
             y_test = y_test.map(mapping_y)
-            
+
             train_arr = np.c_[X_train,np.array(y_train)]
             test_arr = np.c_[X_test,np.array(y_test)]
-            
-            print("Train arr:\n",train_arr)
-            print("Test arr:\n",test_arr)
             
             logging.info("Saved preprocessing object.")
             
             save_object(file_path = self.data_transformation_config.preprocessor_obj_file_path,obj=preprocessing_obj)
-            
-        
-            #print("Xtrain numerical tenure:\n", X_train['tenure'])
-            #print("Xtrain numerical TotalCharges:\n", X_train['TotalCharges'])
-            
             
             '''
             
