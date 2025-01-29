@@ -21,7 +21,9 @@ from sklearn.model_selection import GridSearchCV
 
 from src.exception import CustomException
 from src.logger import logging
-#from src.utils import save_object,evaluate_models
+from src.utils import save_object,load_object
+
+from sklearn.metrics import roc_curve, roc_auc_score
 
 @dataclass
 class ModelTrainerConfig:
@@ -56,20 +58,17 @@ class ModelTrainer:
                 "Linear Discriminant Analysis": LinearDiscriminantAnalysis(),
                 "Decision Tree Classifier": DecisionTreeClassifier(random_state=42),
                 "RandomForest Classifier": RandomForestClassifier(random_state=42),
-                
-                #"XGB Classifier": XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42),
-                #"LGBM Classifier": lgb.LGBMClassifier(random_state=42),
+                "LGBM Classifier": lgb.LGBMClassifier(random_state=42),
                 "CatBoost Classifier": CatBoostClassifier(verbose=0, random_state=42), 
-                "SVM Classifier": SVC(kernel='linear', random_state=42),
-                "KNeighbors Classifier": KNeighborsClassifier()
-                
+                "SVM Classifier": SVC(random_state=42),
+                "KNeighbors Classifier": KNeighborsClassifier() 
             }
             param_grids = {
                 "Logistic Regression": {
                     'C': [0.01, 0.1, 1, 10, 100],
                     'penalty': ['l1', 'l2', 'elasticnet', 'none'],
                     'solver': ['saga'],
-                    'class_weight' : ['balanced']
+                    'class_weight' : ['balanced'],
                 },
                 "Linear Discriminant Analysis": {
                     'solver': ['svd', 'lsqr', 'eigen'],
@@ -91,38 +90,29 @@ class ModelTrainer:
                     'class_weight' : ['balanced', 'balanced_subsample']
                 },
                 
-                #"XGB Classifier": {
-                #    'n_estimators': [50, 100, 200],
-                #    'max_depth': [3, 5, 7],
-                #    'learning_rate': [0.01, 0.1, 0.2],
-                #    'subsample': [0.6, 0.8, 1.0],
-                #    'colsample_bytree': [0.6, 0.8, 1.0],
-                #    'scale_pos_weight': [1, 10, 50] 
-                #},
-                
-                #"LGBM Classifier": {
-                #    'n_estimators': [50, 100, 200],
-                #    'num_leaves': [31, 50, 100],
-                #    'max_depth': [-1, 10, 20],
-                #    'learning_rate': [0.01, 0.1, 0.2],
-                #    'is_unbalance': [True, False],  
-                #    'scale_pos_weight': [1, 10, 50]
-                #},
+                "LGBM Classifier": {
+                    'n_estimators': [50, 70],
+                    'num_leaves': [31, 50],
+                    'max_depth': [10, 20],
+                    'learning_rate': [0.01, 0.1],
+                    'is_unbalance': [True, False],  
+                    'scale_pos_weight': [1, 10]
+                },
                 "CatBoost Classifier": {
-                    'iterations': [100,150,200, 230],
-                    'depth': [4, 6, 9],
-                    'learning_rate': [0.01, 0.1,0.2],
-                    'class_weights': [[1, 5], [1, 10], [1, 20]] 
+                    'iterations': [200, 230],
+                    'depth': [6, 9],
+                    'learning_rate': [0.1,0.2],
+                    'class_weights': [[1, 5], [1, 10]] 
                 },
                 
                 "SVM Classifier": {
-                    'C': [0.1, 1, 10, 100],
+                    'C': [0.1, 1, 10],
                     'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
                     'gamma': ['scale', 'auto'],
                     'class_weight': ['balanced']
                 },
                 "KNeighbors Classifier": {
-                    'n_neighbors': [3, 5, 7, 9],
+                    'n_neighbors': [7, 9],
                     'weights': ['uniform', 'distance'],
                     'metric': ['euclidean', 'manhattan', 'minkowski']
                 }
@@ -131,20 +121,19 @@ class ModelTrainer:
             
             model_list = []
             f1score_list =[]
-            best_estimators = []
+            
             for i in range(len(list(models))):
                 model = list(models.values())[i]
-                #para = param_grids[list(models.keys())[i]]
-                model.fit(X_train, y_train) # Train model
+                para = param_grids[list(models.keys())[i]]
+                #model.fit(X_train, y_train) # Train model
                 
-                #gs = GridSearchCV(model,para,cv=3)
-                #gs.fit(X_train,y_train)
+                gs = GridSearchCV(model,para,cv=3,scoring='f1_weighted', n_jobs=-1)
+                gs.fit(X_train,y_train)
                 
-                #model.set_params(**gs.best_params_)
-                #model.fit(X_train,y_train)
+                #model = gs.best_estimator_
+                model.set_params(**gs.best_params_)
+                model.fit(X_train,y_train)
                 
-                #best_estimators.append((model, gs.best_estimator_))
-
                 # Make predictions
                 y_train_pred = model.predict(X_train)
                 y_test_pred = model.predict(X_test)
@@ -160,22 +149,13 @@ class ModelTrainer:
                 print('Model performance for Training set')
                 print("- Accuracy score: \n{:.4f}".format(model_train_accuracyscore))
                 print("- Classification report:\n {}".format(model_train_classificationreport))
-                #sns.heatmap(model_train_confusionmatrix, annot=True, fmt='d', cmap='Blues', xticklabels=["Yes", "No"], yticklabels=["Yes", "No"])
-                #plt.xlabel('Predicted')
-                #plt.ylabel('Actual')
-                #plt.title('Confusion Matrix - Train')
-                #plt.show()
 
                 print('----------------------------------')
                 
                 print('Model performance for Test set')
                 print("- Accuracy score: \n{:.4f}".format(model_test_accuracyscore))
                 print("- Classification report: \n{}".format(model_test_classificationreport))
-                #sns.heatmap(model_test_confusionmatrix, annot=True, fmt='d', cmap='Blues', xticklabels=["Yes", "No"], yticklabels=["Yes", "No"])
-                #plt.xlabel('Predicted')
-                #plt.ylabel('Actual')
-                #plt.title('Confusion Matrix - Test')
-                #plt.show()
+               
                 f1score_list.append(classificationreport_test_dict['weighted avg']['f1-score'])
             
             model_dict = {}
@@ -191,18 +171,6 @@ class ModelTrainer:
             best_model = models[best_model_name]
 
             print("model_dict:",model_dict)
-            '''
-            model_report:dict = evaluate_models(X_train=X_train,y_train=y_train,X_test=X_test,y_test=y_test,models=models,params=params)
-            
-            #To get best model score for dictionary
-            best_model_score = max(sorted(model_report.values()))
-            
-            #To get best model name from dictionary
-            best_model_name = list(model_report.keys())[
-                list(model_report.values()).index(best_model_score)
-            ]
-            
-            best_model = models[best_model_name]
             
             if best_model_score < 0.6:
                 raise CustomException("No best model found")
@@ -213,10 +181,24 @@ class ModelTrainer:
             
             save_object(file_path=self.model_trainer_config.trained_model_file_path,obj=best_model) 
             
-            predicted = best_model.predict(X_test)
+            y_pred_prob = best_model.predict_proba(X_test)[:, 1] 
+
+            fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
+            auc_score = roc_auc_score(y_test, y_pred_prob)
             
-            r2_square = r2_score(y_test,predicted)
-            '''
+            print(f"AUC: {auc_score:.2f}")
+            #print("fpr:",fpr)
+            #print("tpr:",tpr)
+            print("thresholds:",thresholds)
+            
+            optimal_idx = np.argmax(tpr-fpr)
+            optimal_threshold = thresholds[optimal_idx]
+            print(f"Optimal Threshold: {optimal_threshold:.2f}")
+            
+            #predicted = best_model.predict(X_test)
+            
+            #r2_square = r2_score(y_test,predicted)
+            
             return best_model_name
         
         except Exception as e:

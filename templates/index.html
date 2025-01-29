@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Gemstone Price Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  </head>
+  <body>
+    <a href="https://github.com/utkarshg1/mlproject_regression" class="top-left-link" target="_blank">GitHub Repository Link</a>
+    <h1>Gemstone Price Prediction - Utkarsh Gaikwad</h1>
+
+    <div class="form-box">
+    <form action="{{url_for('predict_datapoint_dl')}}" method="POST">
+        <div class="form-group">
+          <label for="SeniorCitizen">SeniorCitizen:</label>
+          <select id="SeniorCitizen" name="SeniorCitizen">
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="Partner">Partner:</label>
+          <select id="Partner" name="Partner">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="Dependents">Dependents:</label>
+          <select id="Dependents" name="Dependents">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="tenure">tenure:</label>
+          <input type="text" id="tenure" name="tenure" placeholder="Enter tenure value (integer)">
+        </div>
+
+        <div class="form-group">
+          <label for="OnlineSecurity">OnlineSecurity:</label>
+          <select id="OnlineSecurity" name="OnlineSecurity">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+            <option value="No internet service">No internet service</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="InternetService">InternetService:</label>
+          <select id="InternetService" name="InternetService">
+            <option value="Fiber optic">Fiber optic</option>
+            <option value="DSL">DSL</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="OnlineBackup">OnlineBackup:</label>
+          <select id="OnlineBackup" name="OnlineBackup">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+            <option value="No internet service">No internet service</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="DeviceProtection">DeviceProtection:</label>
+          <select id="DeviceProtection" name="DeviceProtection">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+            <option value="No internet service">No internet service</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="TechSupport">TechSupport:</label>
+          <select id="TechSupport" name="TechSupport">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+            <option value="No internet service">No internet service</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="Contract">Contract:</label>
+          <select id="Contract" name="Contract">
+            <option value="Month-to-month">Month-to-month</option>
+            <option value="Two year">Two year</option>
+            <option value="One year">One year</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="PaperlessBilling">PaperlessBilling:</label>
+          <select id="PaperlessBilling" name="PaperlessBilling">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="PaymentMethod">PaymentMethod:</label>
+          <select id="PaymentMethod" name="PaymentMethod">
+            <option value="Electronic check">Electronic check</option>
+            <option value="Mailed check">Mailed check</option>
+            <option value="Bank transfer (automatic)">Bank transfer (automatic)</option>
+            <option value="Credit card (automatic)">Credit card (automatic)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="TotalCharges">TotalCharges:</label>
+          <input type="text" id="TotalCharges" name="TotalCharges" placeholder="Enter TotalCharges value (float)">
+        </div>
+        <div style="clear:both;"></div>
+        <input type="submit" value="Submit">
+        
+    </form>
+    </div>
+    <h2> 
+      The prediction is {{results}}   
+    </h2>
+  </body>
+</html>

@@ -19,6 +19,23 @@ from src.utils import save_object
 @dataclass
 class DataTransformationConfig:
     preprocessor_obj_file_path = os.path.join('artifacts',"preprocessor.pkl")
+
+class MultiColumnLabelEncoder(BaseEstimator, TransformerMixin):
+    def __init__(self):
+        self.encoders = []  # Store LabelEncoders for each column
+    
+    def fit(self, X, y=None):
+        # X is a 2D NumPy array (categorical columns)
+        self.encoders = [LabelEncoder() for _ in range(X.shape[1])]
+        for i in range(X.shape[1]):
+            self.encoders[i].fit(X[:, i])  # Fit on each column
+        return self
+    
+    def transform(self, X):
+        X_transformed = X.copy()
+        for i in range(X.shape[1]):
+            X_transformed[:, i] = self.encoders[i].transform(X[:, i])  # Transform each column
+        return X_transformed
     
 class DataTransformation:
     def __init__(self):
@@ -69,7 +86,7 @@ class DataTransformation:
             cat_pipeline = Pipeline(
                 steps=[
                     ("imputer",SimpleImputer(strategy="most_frequent")),
-                    ("label_encoder", OneHotEncoder())
+                    ("label_encoder", MultiColumnLabelEncoder())
                 ]
                 )
             

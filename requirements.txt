@@ -10,4 +10,6 @@ Flask
 imblearn
 lightgbm
 xgboost
+flask
+flask_cors
 -e .
