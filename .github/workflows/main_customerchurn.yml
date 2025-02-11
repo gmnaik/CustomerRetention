@@ -32,6 +32,9 @@ jobs:
         push: true
         tags: testdockergoutam.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_40b48c22adc54f8eaef0af856ecb32e7 }}/customerretention:${{ github.sha }}
         file: ./Dockerfile
+    - name: Copy artifacts
+        run: mkdir -p ${{ github.workspace }}/artifacts && cp -r artifacts/ ${{ github.workspace }}/
+
 
   deploy:
     runs-on: ubuntu-latest
