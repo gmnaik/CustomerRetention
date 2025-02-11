@@ -23,14 +23,14 @@ jobs:
       uses: docker/login-action@v2
       with:
         registry: https://testdockergoutam.azurecr.io/
-        username: ${{ secrets.AzureAppService_ContainerUsername_bfc1dd939408440d90d470d9345ab333 }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_f544d565574e45149bc343398dbbb178 }}
+        username: ${{ secrets.AzureAppService_ContainerUsername_140b1efc33634c4db399a96861656e0b }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_9152d99f644d4779ab4b48453efe9e89 }}
 
     - name: Build and push container image to registry
       uses: docker/build-push-action@v3
       with:
         push: true
-        tags: testdockergoutam.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_bfc1dd939408440d90d470d9345ab333 }}/customerretention:${{ github.sha }}
+        tags: testdockergoutam.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_140b1efc33634c4db399a96861656e0b }}/customerretention:${{ github.sha }}
         file: ./Dockerfile
 
   deploy:
@@ -47,5 +47,5 @@ jobs:
       with:
         app-name: 'testdockergoutam'
         slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_1992b22042ff47b6a5d2550da7c5a4a6 }}
-        images: 'testdockergoutam.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_bfc1dd939408440d90d470d9345ab333 }}/customerretention:${{ github.sha }}'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_4f40bb2c74ed45beb778f4c20e76618b }}
+        images: 'testdockergoutam.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_140b1efc33634c4db399a96861656e0b }}/customerretention:${{ github.sha }}'
