@@ -44,8 +44,8 @@ def predict_datapoint_dl():
         
         print("Predicted Maths score",results)
         
-        return render_template('index.html',results="Hi how are you")
+        return render_template('index.html',results=results[0])
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', debug=True, port=8000)
